@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib import admin
-from .models import Book
+
+from users.models import BorrowRecord, BorrowedBook
+from .models import Book, Author, Genre
 
 
 class BookAdmin(admin.ModelAdmin):
@@ -17,3 +19,20 @@ class BookAdmin(admin.ModelAdmin):
     display_genre.short_description = 'Genre'
 
     search_fields = ['title', 'authors__name', 'genre__name']
+
+
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+
+
+class GenreAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+
+
+admin.site.register(Book, BookAdmin)
+admin.site.register(Author, AuthorAdmin)
+admin.site.register(Genre, GenreAdmin)
+admin.site.register(BorrowRecord)
+admin.site.register(BorrowedBook)

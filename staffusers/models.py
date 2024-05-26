@@ -4,7 +4,8 @@ from django.conf import settings
 
 class StaffUser(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    position = models.CharField(max_length=100)
+    is_staff = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.user.username

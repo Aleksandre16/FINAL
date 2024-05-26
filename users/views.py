@@ -4,7 +4,6 @@ from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic import DetailView
 from django.contrib import messages
-from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test, login_required
 
 from library.models import Book, BorrowRecord
@@ -38,7 +37,7 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                if hasattr(user, 'staffuser'):
+                if user.is_staff:
                     messages.error(request, 'This is a staff user. Please use the staff login.')
                 else:
                     login(request, user)
@@ -86,30 +85,6 @@ class BookDetailView(DetailView):
         context['is_borrowed'] = BorrowedBook.objects.filter(user=self.request.user, book=self.object).exists()
         context['available'] = self.object.quantity > 0
         return context
-
-
-@login_required
-def borrow_book(request, pk):
-    book = get_object_or_404(Book, pk=pk)
-    if book.quantity > 0:
-        book.quantity -= 1  # Decrease the book count by 1
-        book.save()  # Don't forget to save the changes
-        BorrowRecord.objects.create(user=request.user, book=book)
-        messages.success(request, 'You have successfully borrowed this book.')
-    else:
-        messages.error(request, 'This book is currently unavailable.')
-    return redirect('users:book-detail', pk=pk)  # redirect to the book detail view in users app
-
-
-@login_required
-def return_book(request, pk):
-    book = get_object_or_404(Book, pk=pk)
-    record = get_object_or_404(BorrowRecord, book=book, user=request.user, returned_at__isnull=True)
-    record.returned_at = timezone.now()
-    record.save()
-    book.quantity += 1
-    book.save()
-    return redirect('book-detail', pk=pk)
 
 
 @login_required

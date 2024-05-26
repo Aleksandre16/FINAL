@@ -2,16 +2,7 @@
 <p>Some other details about the book...like the author, genre, etc</p>
 <p>Quantity: {{ book.quantity }}</p>  <!-- Add this line to display book quantity -->
 
-{% if is_borrowed %}
-    <p>You've already borrowed this book.</p>
-{% elif not available %}
-    <p>No books available at this time.</p>
-{% else %}
-    <form method="post" action="{% url 'users:borrow-book' book.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Borrow this book</button>
-    </form>
-{% endif %}
+
 
 {% if messages %}
     <ul class="messages">

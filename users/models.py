@@ -14,6 +14,7 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=100)
     personal_number = models.CharField(max_length=100, unique=True)
     date_of_birth = models.DateField()
+    is_user = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'full_name', 'personal_number', 'date_of_birth']

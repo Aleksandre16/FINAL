@@ -1,12 +1,13 @@
 from django.urls import path
 from . import views
+from .views import return_book, borrow_book
 
 app_name = 'staffusers'
 
 urlpatterns = [
-    path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
-    path('create_book/', views.create_book, name='create_book'),
-    path('edit_book/<int:book_id>/', views.edit_book, name='edit_book'),
-    path('delete_book/<int:book_id>/', views.delete_book, name='delete_book'),
+    path('', views.staff_home, name='staff_home'),
+    path('book/<int:pk>/borrow/', borrow_book, name='borrow-book'),
+    path('book/<int:pk>/return/', return_book, name='return-book'),
+
 ]
