@@ -1,9 +1,5 @@
-from urllib import request
-
 from django.contrib.auth.models import AbstractUser
-from django.db import models
-from pyexpat.errors import messages
-
+from django.utils import timezone
 from FINAL import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -35,3 +31,15 @@ class BorrowedBook(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     book = models.ForeignKey('library.Book', on_delete=models.CASCADE)
     borrowed_at = models.DateTimeField(auto_now_add=True)
+
+
+class Reservation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    book = models.ForeignKey('library.Book', on_delete=models.CASCADE)
+    reserved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} reserved {self.book.title}"
+
+    def is_expired(self):
+        return timezone.now() - self.reserved_at > timezone.timedelta(hours=24)

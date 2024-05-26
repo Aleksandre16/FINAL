@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, Reservation
 
 
-# Define a custom UserAdmin
 class CustomUserAdmin(UserAdmin):
     model = User
     fieldsets = (
@@ -19,10 +18,17 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
     list_display = (
-    'username', 'email', 'full_name', 'personal_number', 'date_of_birth', 'is_staff', 'is_superuser', 'is_user')
+        'username', 'email', 'full_name', 'personal_number', 'date_of_birth', 'is_staff', 'is_superuser', 'is_user')
     search_fields = ('username', 'email', 'full_name', 'personal_number')
     ordering = ('username',)
 
 
-# Register the User model with the custom admin
+class BookReservation(admin.ModelAdmin):
+    model = Reservation
+    list_display = ('user', 'book', 'reserved_at')
+    search_fields = ('user', 'book', 'reserved_at')
+    ordering = ('reserved_at',)
+
+
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Reservation, BookReservation)

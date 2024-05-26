@@ -1,17 +1,57 @@
-<h1>{{ book.title }}</h1>
-<p>Some other details about the book...like the author, genre, etc</p>
-<p>Quantity: {{ book.quantity }}</p>  <!-- Add this line to display book quantity -->
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <title>{{ book.title }}</title>
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .btn-group {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>{{ book.title }}</h1>
+    <p>Author: {{ book.author }}</p>
+    <p>Genre: {{ book.genre }}</p>
+    <p>Quantity: {{ book.quantity }}</p>
+    <p>Description: {{ book.description }}</p>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if remaining_time %}
+        <p>Time remaining until reservation expires: {{ remaining_time }}</p>
+    {% endif %}
 
 
+    <div class="btn-group">
+        <form method="post" action="{% url 'users:book-detail' book.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reserve">
+            <button type="submit" class="btn btn-primary">Reserve this book</button>
+        </form>
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+        <form method="post" action="{% url 'users:book-detail' book.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="cancel">
+            <button type="submit" class="btn btn-danger">Cancel Reservation</button>
+        </form>
+    </div>
+</div>
 
-{% if is_borrowed %}
-    <a href="{% url 'users:cancel-reservation' book.id %}">Cancel Reservation</a>  <!-- Add 'users:' to the url -->
-{% endif %}
+</body>
+</html>

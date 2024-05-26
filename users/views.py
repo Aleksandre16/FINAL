@@ -2,13 +2,13 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from django.views.generic import DetailView
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required
 
-from library.models import Book, BorrowRecord
+from library.models import Book
 from .forms import CustomUserCreationForm
-from .models import BorrowedBook
+from users.models import BorrowedBook, Reservation
 
 User = get_user_model()
 
@@ -63,7 +63,7 @@ def users_home(request):
     books_list = Book.objects.all()
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(books_list, 10)  # Show 10 books per page
+    paginator = Paginator(books_list, 12)  # Show 10 books per page
     try:
         books = paginator.page(page)
     except PageNotAnInteger:
@@ -71,32 +71,49 @@ def users_home(request):
     except EmptyPage:
         books = paginator.page(paginator.num_pages)
 
-    borrowed_books = BorrowedBook.objects.filter(user=request.user).values_list('book', flat=True)
-
-    return render(request, 'users/index.html', {'books': books, 'borrowed_books': borrowed_books})
-
-
-class BookDetailView(DetailView):
-    model = Book
-    template_name = 'users/book_detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['is_borrowed'] = BorrowedBook.objects.filter(user=self.request.user, book=self.object).exists()
-        context['available'] = self.object.quantity > 0
-        return context
+    return render(request, 'users/index.html', {'books': books})
 
 
 @login_required
-def cancel_reservation(request, pk):
+def book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
-    record = BorrowRecord.objects.filter(user=request.user, book=book).order_by(
-        'borrowed_at').first()  # change this line
-    if record:  # Checking if record is not None
-        book.quantity += 1
-        book.save()
-        record.delete()
-        messages.success(request, 'You have successfully cancelled your reservation.')
-    else:
-        messages.error(request, 'No reservation record found.')
-    return redirect('users:book-detail', pk=pk)
+    reservations = Reservation.objects.filter(user=request.user, book=book)
+    available = book.quantity > 0
+    remaining_time = None
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'reserve':
+            if available and not reservations.exists():
+                Reservation.objects.create(user=request.user, book=book)
+                book.quantity -= 1
+                book.save()
+                messages.success(request, 'You have successfully reserved the book.')
+            elif reservations.exists():
+                messages.error(request, 'You have already reserved this book.')
+            else:
+                messages.error(request, 'This book is currently unavailable for reservation.')
+        elif action == 'cancel':
+            if reservations.exists():
+                reservation = reservations.first()
+                if not reservation.is_expired():
+                    reservation.delete()
+                    book.quantity += 1
+                    book.save()
+                    messages.success(request, 'You have successfully cancelled your reservation.')
+                else:
+                    messages.error(request, 'Your reservation has expired and cannot be cancelled.')
+            else:
+                messages.error(request, 'You have not reserved this book.')
+
+    if reservations.exists():
+        reservation = reservations.first()
+        if not reservation.is_expired():
+            remaining_time = timezone.timedelta(hours=24) - (timezone.now() - reservation.reserved_at)
+
+    return render(request, 'users/book_detail.html', {
+        'book': book,
+        'reservations': reservations,
+        'available': available,
+        'remaining_time': remaining_time
+    })

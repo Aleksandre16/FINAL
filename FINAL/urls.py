@@ -8,6 +8,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('staffusers/', include('staffusers.urls')),
-    path('library/', include(library_router.urls)),  # Include DRF API URLs
+    path('library/', include(library_router.urls)),  #DRF
     path('', views.index, name='index'),
 ]

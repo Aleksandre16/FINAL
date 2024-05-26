@@ -1,5 +1,5 @@
 from django.db import models
-from django.conf import settings  # Import the settings module from FINAL
+from django.conf import settings
 
 
 class Author(models.Model):

@@ -1,10 +1,18 @@
 from django.contrib.auth.decorators import user_passes_test
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
 from users.models import BorrowRecord
 from .forms import CreateBookForm
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.shortcuts import render, redirect
+from .forms import BorrowForm, ReturnBookForm
+from library.models import Book, BorrowRecord
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -15,10 +23,10 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            user_type = request.POST.get('user_type')  # Get the user type from the hidden input
+            user_type = request.POST.get('user_type')
             user = authenticate(username=username, password=password)
             if user is not None:
-                if user.is_staff and user_type == 'staff':  # Check if the user is staff and user_type is 'staff'
+                if user.is_staff and user_type == 'staff':
                     login(request, user)
                     return redirect('staffusers:staff_home')
                 else:
@@ -35,8 +43,17 @@ def login_view(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def staff_home(request):
-    books = Book.objects.all()
-    return render(request, 'staffusers/index.html', {'books': books})
+    query = request.GET.get('q')
+    if query:
+        books = Book.objects.filter(Q(title__icontains=query) | Q(authors__name__icontains=query)).distinct()
+    else:
+        books = Book.objects.all()
+
+    paginator = Paginator(books, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'staffusers/index.html', {'page_obj': page_obj, 'query': query})
 
 
 def add_book(request):
@@ -70,15 +87,6 @@ def edit_book(request, book_id):
     return render(request, 'staffusers/edit_book.html', {'form': form})
 
 
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.shortcuts import render, redirect
-from .forms import BorrowForm, ReturnBookForm
-from library.models import Book, BorrowRecord
-from django.utils import timezone
-
-
 @login_required
 def lend_book(request):
     borrow_form = BorrowForm(request.POST or None)
@@ -108,16 +116,6 @@ def lend_book(request):
                 borrow_instance.book.quantity -= 1
                 borrow_instance.book.save()
                 messages.success(request, 'Book has been successfully lent.')
-
-                # Assuming you have a Reservation model or similar logic to cancel reservations
-                # user_reservation = Reservation.objects.filter(
-                #     book=borrow_instance.book,
-                #     user=borrow_instance.user
-                # ).first()
-
-                # if user_reservation:
-                #     user_reservation.delete()
-                #     messages.info(request, 'Reservation has been automatically canceled.')
 
                 return redirect('staffusers:lend_book')
 
@@ -154,16 +152,6 @@ def lend_book(request):
                 borrow_instance.book.quantity -= 1
                 borrow_instance.book.save()
                 messages.success(request, 'Book has been successfully lent.')
-
-                # Assuming you have a Reservation model or similar logic to cancel reservations
-                # user_reservation = Reservation.objects.filter(
-                #     book=borrow_instance.book,
-                #     user=borrow_instance.user
-                # ).first()
-
-                # if user_reservation:
-                #     user_reservation.delete()
-                #     messages.info(request, 'Reservation has been automatically canceled.')
 
                 return redirect('staffusers:lend_book')
 
