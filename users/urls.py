@@ -11,5 +11,4 @@ urlpatterns = [
     path('book/<int:pk>/', BookDetailView.as_view(), name='book-detail'),
     path('book/<int:pk>/borrow/', borrow_book, name='borrow-book'),
     path('cancel/<int:pk>/', cancel_reservation, name='cancel-reservation')
-
 ]

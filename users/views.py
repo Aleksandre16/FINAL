@@ -1,17 +1,14 @@
-from datetime import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic import DetailView
 from django.contrib import messages
+from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test, login_required
 
 from library.models import Book, BorrowRecord
 from .forms import CustomUserCreationForm
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from library.models import Book
 from .models import BorrowedBook
 
 User = get_user_model()
@@ -41,8 +38,16 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                login(request, user)
-                return redirect('users:index')
+                if hasattr(user, 'staffuser'):
+                    messages.error(request, 'This is a staff user. Please use the staff login.')
+                else:
+                    login(request, user)
+                    messages.success(request, 'You have successfully logged in.')
+                    return redirect('users:index')
+            else:
+                messages.error(request, 'User not found.')
+        else:
+            messages.error(request, 'Invalid username or password.')
     else:
         form = AuthenticationForm()
     return render(request, 'users/login.html', {'form': form})
