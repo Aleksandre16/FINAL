@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Return Book</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        form p {
+            margin-bottom: 10px;
+        }
+        button.btn {
+            padding: 10px 15px;
+            margin-top: 10px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+        }
+        button.btn:hover {
+            background-color: #0056b3;
+        }
+        .messages {
+            margin-top: 20px;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .message.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Return Book</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Return Book</button>
+        </form>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
