@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .btn-custom {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Welcome to the Library Management System</h1>
+    <div>
+        <a href="{% url 'users:register' %}" class="btn btn-primary btn-custom">Register</a>
+        <a href="{% url 'users:login' %}" class="btn btn-success btn-custom">Login</a>
+        <a href="{% url 'staffusers:login' %}" class="btn btn-warning btn-custom">Staff Login</a>
+    </div>
+</div>
+</body>
+</html>
