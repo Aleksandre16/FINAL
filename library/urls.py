@@ -10,4 +10,5 @@ router.register('borrow_records', views.BorrowRecordViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+
 ]

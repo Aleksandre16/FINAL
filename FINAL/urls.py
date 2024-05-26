@@ -10,4 +10,5 @@ urlpatterns = [
     path('staffusers/', include('staffusers.urls')),
     path('library/', include(library_router.urls)),  #DRF
     path('', views.index, name='index'),
+
 ]
