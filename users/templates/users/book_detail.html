@@ -1,0 +1,26 @@
+<h1>{{ book.title }}</h1>
+<p>Some other details about the book...like the author, genre, etc</p>
+<p>Quantity: {{ book.quantity }}</p>  <!-- Add this line to display book quantity -->
+
+{% if is_borrowed %}
+    <p>You've already borrowed this book.</p>
+{% elif not available %}
+    <p>No books available at this time.</p>
+{% else %}
+    <form method="post" action="{% url 'users:borrow-book' book.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Borrow this book</button>
+    </form>
+{% endif %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if is_borrowed %}
+    <a href="{% url 'users:cancel-reservation' book.id %}">Cancel Reservation</a>  <!-- Add 'users:' to the url -->
+{% endif %}
