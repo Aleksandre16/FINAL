@@ -42,25 +42,32 @@ def staff_home(request):
     return render(request, 'staffusers/index.html', {'books': books})
 
 
-@login_required
-def borrow_book(request, pk):
-    book = get_object_or_404(Book, pk=pk)
-    if book.quantity > 0:
-        book.quantity -= 1  # Decrease the book count by 1
-        book.save()  # Don't forget to save the changes
-        BorrowRecord.objects.create(user=request.user, book=book)
-        messages.success(request, 'You have successfully borrowed this book.')
+def add_book(request):
+    if request.method == 'POST':
+        form = CreateBookForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('staffusers:staff_home')
     else:
-        messages.error(request, 'This book is currently unavailable.')
-    return redirect('users:book-detail', pk=pk)  # redirect to the book detail view in users app
+        form = CreateBookForm()
+    return render(request, 'staffusers/create_book.html', {'form': form})
 
 
-@login_required
-def return_book(request, pk):
-    book = get_object_or_404(Book, pk=pk)
-    record = get_object_or_404(BorrowRecord, book=book, user=request.user, returned_at__isnull=True)
-    record.returned_at = timezone.now()
-    record.save()
-    book.quantity += 1
-    book.save()
-    return redirect('book-detail', pk=pk)
+def delete_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        book.delete()
+        return redirect('staffusers:staff_home')
+    return render(request, 'staffusers/delete_book.html', {'book': book})
+
+
+def edit_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'POST':
+        form = CreateBookForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('staffusers:staff_home')
+    else:
+        form = CreateBookForm(instance=book)
+    return render(request, 'staffusers/edit_book.html', {'form': form})

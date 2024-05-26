@@ -26,3 +26,5 @@ class BookViewSet(viewsets.ModelViewSet):
 class BorrowRecordViewSet(viewsets.ModelViewSet):
     queryset = BorrowRecord.objects.all()
     serializer_class = BorrowRecordSerializer
+
+
